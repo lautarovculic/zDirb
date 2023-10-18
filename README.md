@@ -8,7 +8,7 @@ A Python script for enumerating directories and counting words in files with pro
 - [Prerequisites](#prerequisites)
 - [Usage](#usage)
 - [Customization](#customization)
-- [License](#license)
+
 
 ## Description
 
