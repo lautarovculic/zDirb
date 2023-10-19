@@ -1,6 +1,6 @@
 # zDirb
 
-A Python script for enumerating directories and counting words in files with progress tracking.
+A Python script for enumerating directories and subdomains. Fast.
 
 ## Table of Contents
 
@@ -13,6 +13,7 @@ A Python script for enumerating directories and counting words in files with pro
 ## Description
 
 This Python script allows you to enumerate directories based on a provided URL and count the words in files located in those directories using a wordlist. It includes progress tracking with an interactive progress bar.
+In addition, you will be able to list subdomains and also by specific extensions.
 
 ## Prerequisites
 
@@ -32,16 +33,27 @@ pip install alive-progress
 
 1 - Clone this repository to your local machine:
 ```bash
-git clone https://github.com/your-username/directory-enumeration-tool.git
+git clone https://github.com/lautarovculic/zDirb.git
 ```
 2 - Navigate to the project directory:
 ```bash
-cd directory-enumeration-tool
+cd zDirb
 ```
 3 - Run the script with the following command:
 ```bash
-python3 directory_enumerator.py -u <start_url> -w <wordlist_file>
+python3 zDirb.py -u <start_url> -w <wordlist_file>
 ```
+To list subdirectories you can use the parameter -s
+For example:
+```bash
+python3 zDirb.py -s -u <start_url> -w <wordlist_file>
+```
+To enumerate by any type of extension you can use -e
+For example:
+```bash
+python3 zDirb.py -u <start_url> -w <wordlist_file> -e .php
+```
+
 If you don't provide the -u or -w arguments, the script will prompt you to enter the URL and wordlist file paths.
 
 The script will automatically add "http://" or "https://" to the URL if missing.
