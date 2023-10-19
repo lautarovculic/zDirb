@@ -22,19 +22,12 @@ print(f"############# {Fore.RED}zDirb{Fore.RESET} #############")
 print(f"### {Fore.RED}https://lautarovculic.com{Fore.RESET} ###")
 print("#################################")
 
-
-def enumerate_directory(url, bar):
-    response = requests.get(url)
+def enumerate_directory(url, extension, bar):
+    url_with_extension = url + extension
+    response = requests.get(url_with_extension)
     if response.status_code != 404:
-        print(f"HTTP Status {Fore.GREEN}{response.status_code}{Fore.RESET} - {Fore.LIGHTGREEN_EX}{url}{Fore.RESET}")
+        print(f"HTTP Status {Fore.GREEN}{response.status_code}{Fore.RESET} - {Fore.LIGHTGREEN_EX}{url_with_extension}{Fore.RESET}")
     bar()
-
-def count_words_in_file(filename):
-    with open(filename, 'r', encoding='ISO-8859-1') as file:
-        wordlist = file.read()
-        words = wordlist.split()
-        total_words = len(words)
-        return total_words
 
 def add_protocol(url):
     if not url.startswith("http://") and not url.startswith("https://"):
@@ -51,7 +44,7 @@ def get_valid_url(prompt):
 
 def get_wordlist():
     while True:
-        wordlist_file = input("{Fore.RED}Enter the path to the wordlist file: {Fore.RESET}")
+        wordlist_file = input(f"{Fore.RED}Enter the path to the wordlist file: {Fore.RESET}")
         try:
             with open(wordlist_file, "r", encoding="ISO-8859-1") as file:
                 wordlist = file.readlines()
@@ -62,7 +55,7 @@ def get_wordlist():
         except FileNotFoundError:
             print(f"File not found: {Fore.RED}{wordlist_file}{Fore.RESET}. Please provide a valid wordlist file.")
 
-def enumerate_directories(url, history, wordlist):
+def enumerate_directories(url, history, wordlist, extension):
     total_words = len(wordlist)
     print(f"Total words in the wordlist: {Fore.RED}{total_words}{Fore.RESET}")
 
@@ -73,26 +66,47 @@ def enumerate_directories(url, history, wordlist):
 
         with alive_bar(total_words, title="Enumerating directories", bar="classic", spinner="classic") as bar:
             with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-                futures = {executor.submit(enumerate_directory, f"{url}/{line.strip()}", bar): line for line in wordlist}
+                futures = {executor.submit(enumerate_directory, f"{url}/{line.strip()}", extension, bar): line for line in wordlist}
                 concurrent.futures.wait(futures)
 
-            end_time = time.time()
-            elapsed_time = end_time - start_time
+        end_time = time.time()
+        elapsed_time = end_time - start_time
 
-            print(f"Enumeration completed in {Fore.RED}{elapsed_time:.2f} seconds.{Fore.RESET}")
-            print(f"Total words enumerated:{Fore.RED}{total_words}{Fore.RESET}")
+        print(f"Enumeration completed in {Fore.RED}{elapsed_time:.2f} seconds.{Fore.RESET}")
+        print(f"Total words enumerated:{Fore.RED}{total_words}{Fore.RESET}")
+        exit()
 
-            response = input("Enter the URL of the directory to enumerate or press Enter to continue with the original URL: ").strip()
-            if not response:
-                print(f"{Fore.RED}URL cannot be empty{Fore.RESET}. Please provide a valid URL.")
-            else:
-                url = add_protocol(response)
-                history.append(url)
+def enumerate_subdomains(url, history, wordlist):
+    total_words = len(wordlist)
+    print(f"Total subdomains in the wordlist: {Fore.RED}{total_words}{Fore.RESET}")
+
+    start_time = time.time()
+
+    with alive_bar(total_words, title="Enumerating subdomains", bar="classic", spinner="classic") as bar:
+        for line in wordlist:
+            subdomain = line.strip()
+            if subdomain and len(subdomain) <= 63: 
+                subdomain_url = f"http://{subdomain}.{url.split('//')[-1]}"
+                try:
+                    response = requests.get(subdomain_url)
+                    if response.status_code != 404:
+                        print(f"Subdomain {Fore.GREEN}found{Fore.RESET} - {Fore.LIGHTGREEN_EX}{subdomain_url}{Fore.RESET}")
+                except requests.exceptions.RequestException:
+                    pass
+            bar()
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+
+    print(f"Enumeration completed in {Fore.RED}{elapsed_time:.2f} seconds.{Fore.RESET}")
+    print(f"Total words enumerated: {Fore.RED}{total_words}{Fore.RESET}")
+    exit()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-u", "--url", help="URL to start enumeration")
-    parser.add_argument("-w", "--wordlist", help="Wordlist file")
+    parser.add_argument("-u", "--url", help="URL to start enumeration (Example: -u https://lautarovculic.com)")
+    parser.add_argument("-w", "--wordlist", help="Wordlist file path (Example: -w common.txt)")
+    parser.add_argument("-e", "--extension", default="", help="Extension to add to the URLs (Example: -e .php)")
+    parser.add_argument("-s", "--subdomains", action="store_true", help="Enumerate subdomains (Example: -s)")
     args = parser.parse_args()
 
     if args.url:
@@ -115,4 +129,7 @@ if __name__ == "__main__":
 
     history = []
 
-    enumerate_directories(start_url, history, wordlist)
+    if args.subdomains:
+        enumerate_subdomains(start_url, history, wordlist)
+    else:
+        enumerate_directories(start_url, history, wordlist, args.extension)
