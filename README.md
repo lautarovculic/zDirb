@@ -43,7 +43,7 @@ cd zDirb
 ```bash
 python3 zDirb.py -u <start_url> -w <wordlist_file>
 ```
-To list subdirectories you can use the parameter -s
+To list subdomains you can use the parameter -s
 For example:
 ```bash
 python3 zDirb.py -s -u <start_url> -w <wordlist_file>
