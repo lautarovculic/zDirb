@@ -65,7 +65,7 @@ def enumerate_directories(url, history, wordlist, extension):
         start_time = time.time()
 
         with alive_bar(total_words, title="Enumerating directories", bar="classic", spinner="classic") as bar:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
                 futures = {executor.submit(enumerate_directory, f"{url}/{line.strip()}", extension, bar): line for line in wordlist}
                 concurrent.futures.wait(futures)
 
