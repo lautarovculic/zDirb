@@ -26,7 +26,7 @@ def enumerate_directory(url, extension, bar):
     url_with_extension = url + extension
     response = requests.get(url_with_extension)
     if response.status_code != 404:
-        print(f"HTTP Status {Fore.GREEN}{response.status_code}{Fore.RESET} - {Fore.LIGHTGREEN_EX}{url_with_extension}{Fore.RESET}")
+        print(f"Lenght: ({Fore.GREEN}{len(response.content)}{Fore.RESET} bytes) - HTTP Status {Fore.GREEN}{response.status_code}{Fore.RESET} - {Fore.LIGHTGREEN_EX}{url_with_extension}{Fore.RESET}")
     bar()
 
 def add_protocol(url):
@@ -65,7 +65,7 @@ def enumerate_directories(url, history, wordlist, extension):
         start_time = time.time()
 
         with alive_bar(total_words, title="Enumerating directories", bar="classic", spinner="classic") as bar:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
                 futures = {executor.submit(enumerate_directory, f"{url}/{line.strip()}", extension, bar): line for line in wordlist}
                 concurrent.futures.wait(futures)
 
@@ -133,3 +133,4 @@ if __name__ == "__main__":
         enumerate_subdomains(start_url, history, wordlist)
     else:
         enumerate_directories(start_url, history, wordlist, args.extension)
+        
